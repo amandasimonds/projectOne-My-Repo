@@ -22,7 +22,7 @@
                line-height: 30px;">
          </div>
 
-   <div id="map" style="width: 500px; height: 400px; display: none;"></div>
+   <div id="mapg" style="width: 500px; height: 400px; display: none;"></div>
    <button id="button" h= "39.8" v= "-104.8">view map</button>
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -33,7 +33,7 @@ var la= 39.7392
 var ln= -104.9903
 
 var initMap = function() {
-    map = new google.maps.Map(document.getElementById("map"), {
+    map = new google.maps.Map(document.getElementById("mapg"), {
        center: {lat: la, lng: ln},
        zoom: 15
    });
@@ -43,11 +43,11 @@ var initMap = function() {
  });
 }
 
-$("#button").on("click", function(){
-  la= parseFloat($(this).attr("h"), 10);
-  ln= parseFloat($(this).attr("v"), 10);
-  (document.getElementById("map")).style.display = "block";
-  map = new google.maps.Map(document.getElementById("map"), {
+$(document).on("click", "#map", function(){
+  la = $(this).data().lat
+  ln = $(this).data
+  (document.getElementById("mapg")).style.display = "block";
+  map = new google.maps.Map(document.getElementById("mapg"), {
        center: {lat: la, lng: ln},
        zoom: 15
    });
@@ -56,6 +56,7 @@ $("#button").on("click", function(){
    map: map
  });
 });
+
 
 ////////////////////////beer api/////////////////////////
 
@@ -68,10 +69,18 @@ $("#search").on('click', function () {
     // cityInput = cityInput.join('-');
     console.log("city input: " + cityInput);
 
-
 var APIkey = "cd3220993a88c09168f7e658ad27b100";
 var breweryQuery ="https://beermapping.com/webservice/loccity/" + APIkey + "/" + cityInput + "&s=json";
 var mapQuery = "https://beermapping.com/?lat=41.91034&lon=-87.67597&z=5"
+var brewery  = [];
+var rbAddress = "";
+var URLstring = "";
+
+var sampleBrewery = {
+   name: "Breckenridge Brewery",
+   street: "101 Blvd",
+   website: "breckenridge.com"
+}
 
 //call brewery API
 $.ajax({
@@ -81,50 +90,101 @@ $.ajax({
 
       console.log(breweryQuery);
 
-      for(var i = 0; i < 20; i++ ){
+      for(let i = 0; i < 5; i++ ){
+
+         let r = response[0];
+         r = response[Math.floor(Math.random() * response.length)];
+
+         var bAddress = (r.street + " " + r.city + " " + r.state);
+
+         console.log(bAddress);
          
          //get random brewery
-         var rb = response[Math.floor(Math.random() * response.length)];
+         // rb = response[Math.floor(Math.random() * response.length)];
 
          //random brewery address
-         var rbAddress = (rb.street + " " + rb.city + " " + rb.state);
+         // var rbAddress = (rb.street + " " + rb.city + " " + rb.state);
 
-         //random brewery website
+         // //random brewery website
          var URLstring = ""
-         var URLstring = JSON.stringify(rb.url);
+         var URLstring = JSON.stringify(r.url);
          var newURLstring = URLstring.substring(1, URLstring.length);
-         var rbURL = '<a target= "blank" href="https://' + newURLstring +  ">visit their website</a>" ;
+         var bURL = '<a target= "blank" href="https://' + newURLstring +  ">visit their website</a>" ;
 
-         //google geocoding API//
-         //get coordinates for random brewery for geocode//
-         googleAPIkey = "AIzaSyAP6OXI1t3xgoiRrS2RrYY-pmOjKYFnyNU"
-         geocodeURL = "https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway+Mountain+View+CA&key=" + googleAPIkey;
+         // //google geocoding API//
+         // //get coordinates for random brewery for geocode//
+         var googleAPIkey = "AIzaSyAP6OXI1t3xgoiRrS2RrYY-pmOjKYFnyNU"
 
-         gAddress = rbAddress.split(' ');
-         gAddress = gAddress.join('+');
-        //  console.log("create address for geocode: " + gAddress)
-         breweryGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + gAddress + "&key=" + googleAPIkey;
+         // //change address spaces to plus signs so geocode can read it
+         var gAddress = bAddress.replace(" ", "+");
+         console.log("create address for geocode: " + gAddress)
+         var breweryGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + bAddress + "&key=" + googleAPIkey;
 
          $.ajax({
-               url: breweryGeocodeURL,
-               method: "GET"
+          type: "GET",
+          url: breweryGeocodeURL,
+          datatype: "json"
             }).then(function (gresponse) {
                // console.log("google geocode api working: " + breweryGeocodeURL);
                // console.log(gresponse.results[0].geometry.location.lat);
 
                var cityLat = gresponse.results[0].geometry.location.lat;
-               var cityLon = gresponse.results[0].geometry.location.lng;
+               var cityLng = gresponse.results[0].geometry.location.lng;
+               console.log("Inside ajax: " + cityLat + " | " + cityLng); 
 
-               //console log random brewery info
-                // console.log("Name: " + rb.name + " | URL: " + rb.url + " | Address: " + rbAddress + "coordinates: " + cityLat + "," + cityLon);
-                
-            });
+               var tempBrewery = {
+                     name: r.name,
+                     address: r.street + " " + r.city + " " + r.state,
+                     website: r.url,
+                     lat: cityLat,
+                     lng: cityLng
+                        }
 
-            console.log("Name: " + rb.name + " | Address: " + rbAddress + " | Website: " + rb.url);
-            $("#brewery-list").append("<b>" + rb.name + "</b> | " + rbAddress + " | " + rbURL + "<br>");
+            var mapLink = "https://www.google.com/maps/search/?api=1&query=" + cityLat + "," + cityLng;
 
+               brewery.push(tempBrewery);
+
+               console.log("new array");
+               console.log(brewery);
+
+               // var mapBtn = $("<button id='map' data-lat=" + cityLat + "data-lng=" + cityLng + ">")
+           
+         $("#brewery-list").append("<b>" + r.name + "</b> | " + r.street + " " + r.city + " " + r.state + " | " + bURL + '<button id="map" data-lat="' + cityLat + '" data-lng="'  + cityLng + '" >view map</button><br>');
+
+         // $("#map").on('click', function () {
+         // var map;
+         // function initMap(){
+         //    console.log("hi map!");
+         //       (document.getElementById("map")).style.display = "block";
+         //       map = new google.maps.Map(document.getElementById("map"), {
+         //             center: {lat: cityLat, lng: cityLng},
+         //             zoom: 15
+         //          });
+         //          var marker = new google.maps.Marker({
+         //          position: {lat: cityLat, lng: cityLng},
+         //          map: map
+
+         //    });
+         // }
+
+         // initMap();
+
+      });
+
+            // function myCallback(gresponse) {
+            //    var cityLat = gresponse.results[0].geometry.location.lat;
+            //    var cityLng = gresponse.results[0].geometry.location.lng;
+               
+               
+               // });
+
+         
          }
+      
+    }).then(function () {
 
+      // $("#brewery-list").append("<b>" + r.name + "</b> | " + bAddress + " | " + bURL + "<br>");
+      
     });
 
 });
