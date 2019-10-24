@@ -145,9 +145,10 @@ $.ajax({
                // var mapBtn = $("<button id='map' data-lat=" + cityLat + "data-lng=" + cityLng + ">")
            
                $("#brewery-list").append(
-                  "<b>" + r.name + "</b> | " 
-                  + r.street + " " + r.city + " " + r.state + " | "  
+                  "<b>" + r.name + "</b> | "   
                   + '<a target= "blank" href=' + r.reviewlink + '>information & reviews</a>' + " | " 
+                  + r.phone + " | "
+                  + r.street + " " + r.city + " " + r.state + " | "
                   + '<button id="map" data-lat="' + cityLat + '" data-lng="'  + cityLng + '" >view on map</button><br>'
                   );
       });
