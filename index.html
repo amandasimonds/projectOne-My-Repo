@@ -45,7 +45,8 @@ var initMap = function() {
 
 $(document).on("click", "#map", function(){
   la = $(this).data().lat
-  ln = $(this).data
+  ln = $(this).data().lng
+  console.log(la);
   (document.getElementById("mapg")).style.display = "block";
   map = new google.maps.Map(document.getElementById("mapg"), {
        center: {lat: la, lng: ln},
